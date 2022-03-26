@@ -7,9 +7,18 @@ const server = dns2.createServer({
   handle: (request, send, rinfo) => {
     const response = Packet.createResponseFromRequest(request);
     const [ question ] = request.questions;
-    //const { name } = question;
+    const { name } = question;
+
+    // Process the request data
+    if (request.questions[0].type == 28) {
+        console.log("Got desired type!")
+        let arguments = request.questions[0].name.split(".")
+
+    }
+
+
     response.answers.push({
-      name: "Helloitworks",
+      name,
       type: Packet.TYPE.A,
       class: Packet.CLASS.IN,
       ttl: 300,
@@ -21,19 +30,20 @@ const server = dns2.createServer({
 
 server.on('request', (request, response, rinfo) => {
   console.log(request.header.id, request.questions[0]);
+
 });
 
 server.on('listening', () => {
-  console.log(server.address());
+  console.log("ok its on?");
 });
 
 server.on('close', () => {
   console.log('server closed');
 });
 
-//server.listen({
-//  udp: 5333
-//});
+server.listen({
+  udp: 53
+});
 
 // eventually
 //server.close();
