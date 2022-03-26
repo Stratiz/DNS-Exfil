@@ -87,6 +87,8 @@ const server = dns2.createServer({
                     let seqNum = arguments[4]
                     let data = arguments[5]
                     
+                    addResponse(fragmentUpload(key,seqNum,data))
+
                 } else if (command == "end") {
                     let key = arguments[3]
                     addResponse(endUpload(key))
