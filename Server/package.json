@@ -1,0 +1,11 @@
+{
+  "name": "dms-exfil",
+  "version": "1.0.0",
+  "description": "exfil",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Harrison Lewis",
+  "license": "ISC"
+}
