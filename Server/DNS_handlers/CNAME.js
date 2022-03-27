@@ -145,7 +145,6 @@ module.exports = async function(arguments,addResponse) {
             let seqNum = arguments[3]
             let name = arguments[2]
             getDownload(name,seqNum,addResponse)
-            console.log(response.answers)
         }
 
     }

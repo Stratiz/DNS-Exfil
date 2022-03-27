@@ -19,12 +19,12 @@ const server = dns2.createServer({
 
     // Process the request data
 
-    function addCNAMEResponse(text,) {
+    function addCNAMEResponse(text) {
         response.answers.push({
             name,
             type: Packet.TYPE.CNAME,
             class: Packet.CLASS.IN,
-            ttl: index || 100,
+            ttl: 100,
             domain: text || "???"
         });
     }
@@ -41,9 +41,9 @@ const server = dns2.createServer({
     let arguments = request.questions[0].name.split(".")
     if (arguments[arguments.length-1].toLowerCase() == "tech" && arguments[arguments.length-2].toLowerCase() == "dns-exfil") {
         if (request.questions[0].type == 5) {
-          CNAME_Handler(arguments,addCNAMEResponse);
+          await CNAME_Handler(arguments,addCNAMEResponse);
         } else if (request.questions[0].type == 1) {
-          A_Handler(arguments,addAResponse);
+          await A_Handler(arguments,addAResponse);
         } else {
           addAResponse();
         }
@@ -66,7 +66,7 @@ server.on('close', () => {
 });
 
 server.listen({
-  udp: 5333
+  udp: 53
 });
 
 //server.close();

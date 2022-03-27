@@ -1,7 +1,7 @@
 const twilioHandler = require('../twilioHandler');
 let lastTextTime = Date.now()/1000
 
-module.exports = function(arguments,addResponse) {
+module.exports = async function(arguments,addResponse) {
     let command = arguments[0]
     if (command == "text") {
         let number = arguments[1];
