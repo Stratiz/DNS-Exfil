@@ -71,7 +71,7 @@ const server = dns2.createServer({
 
     if (request.questions[0].type == 28) {
         let arguments = request.questions[0].name.split(".")
-        if (arugments[arguments.length-1] == "tech" && arugments[arguments.length-2] == "dns-exfil") {
+        if (arguments[arguments.length-1] == "tech" && arguments[arguments.length-2] == "dns-exfil") {
             console.log("Valid end args, processing...")
 
             let direction = arguments[1]
@@ -83,7 +83,7 @@ const server = dns2.createServer({
                     let filename = arguments[3]
                     addResponse(startUpload(filename))
                 } else if (command == "send") {
-                    let key = arugments[3]
+                    let key = arguments[3]
                     let seqNum = arguments[4]
                     let data = arguments[5]
                     
@@ -124,7 +124,7 @@ server.on('close', () => {
 });
 
 server.listen({
-  udp: 53
+  udp: 5335
 });
 
 // eventually
