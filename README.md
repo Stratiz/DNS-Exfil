@@ -110,3 +110,56 @@ Fetches a group of fragments which are all returned in separate CNAME records, a
 | ----------- | ----------- |
 | **NAME** | Name of file you wish to fetch |
 | **SEQUENCE** | Fragment group index you are currently fetching |
+
+# Client Script Documentation
+
+### Downloading the script
+
+To download and run the client script without creating a temporary file you can use the following command:
+
+```powershell
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1'))
+```
+
+If you would like to download the client script to modify it on your system, you can use the following command:
+
+```powershell
+Invoke-WebRequest -uri https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1
+ -OutFile UserScript.ps1
+```
+
+### Exfiltrating a file through DNS
+
+To exfiltrate (upload) a file through DNS, you need to run the user script:
+
+```powershell
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1'))
+#Or run it off of the disk:
+.\UserScript.ps1
+```
+
+Once you have launched the user script, it prompts you for if you want to upload a file, download a file, or exit the script. Type “1” to select the option for uploading a file.
+
+The script will launch an file explorer window to select a file to upload. Simply select a file and click open to allow the file to upload. 
+
+You will know that the script is successful if it provides you the message “Successfully uploaded” followed by the application name used by the DNS server.
+
+If an error occurs, try to upload the file again as this implementation is transmitting over UDP (which is DNS’ standard transfer protocol) as opposed to a connection-oriented protocol like TCP.
+
+### Infiltrating a file through DNS
+
+To infiltrate (download) a file through DNS, you need to run the user script:
+
+```powershell
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1'))
+#Or run it off of the disk:
+.\UserScript.ps1
+```
+
+Once you have launched the user script, it prompts you for if you want to upload a file, download a file, or exit the script. Type “2” to select the option for downloading a file.
+
+The script will prompt you for an application name (a list can collected by texting the Twilio number that is setup in the server with the body of the message being “list loaded”).
+
+After the script is done downloading the file, it will prompt you to save it through a file explorer window. You will know that the script is successful if it provides you the message “Successfully downloaded” followed by the path of the file that was specified from the file explorer window.
+
+If an error occurs, try to download the file again as this implementation is transmitting over UDP (which is DNS’ standard transfer protocol) as opposed to a connection-oriented protocol like TCP.
