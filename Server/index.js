@@ -69,28 +69,27 @@ const server = dns2.createServer({
         });
     }
 
-    if (request.questions[0].type == 28) {
+    if (request.questions[0].type == 5) {
         let arguments = request.questions[0].name.split(".")
-        if (arguments[arguments.length-1] == "tech" && arguments[arguments.length-2] == "dns-exfil") {
-            console.log("Valid end args, processing...")
+        if (arguments[arguments.length-1].toLowerCase() == "tech" && arguments[arguments.length-2].toLowerCase() == "dns-exfil") {
 
-            let direction = arguments[1]
+            let direction = arguments[0]
 
             if (direction == "up") {
-                let command = arguments[2]
+                let command = arguments[1]
                 
                 if (command == "start") {
-                    let filename = arguments[3]
+                    let filename = arguments[2]
                     addResponse(startUpload(filename))
                 } else if (command == "send") {
-                    let key = arguments[3]
-                    let seqNum = arguments[4]
-                    let data = arguments[5]
+                    let key = arguments[2]
+                    let seqNum = arguments[3]
+                    let data = arguments[4]
                     
                     addResponse(fragmentUpload(key,seqNum,data))
 
                 } else if (command == "end") {
-                    let key = arguments[3]
+                    let key = arguments[2]
                     addResponse(endUpload(key))
                 } else {
                     console.log("Invalid up command: ",command)
@@ -99,7 +98,7 @@ const server = dns2.createServer({
             } else if (direction == "down") {
 
             } else {
-                console.log("Invalid direction:",direction)
+                //console.log("Invalid direction:",direction)
             }
         } else {
             console.log(arguments)
@@ -124,7 +123,7 @@ server.on('close', () => {
 });
 
 server.listen({
-  udp: 5335
+  udp: 53
 });
 
 // eventually
