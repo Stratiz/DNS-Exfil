@@ -9,7 +9,7 @@ module.exports = async function(arguments,addResponse) {
             if ((Date.now()/1000) - lastTextTime > 5) {
                 lastTextTime = (Date.now()/1000)
                 addResponse("2.0.0.0")
-                twilioHandler.sendMessage(number,'Hello! thanks for your interest in DNS exfiltration! \n\nPlease head to our github page for more information! \n\n https://github.com/Stratiz/DNS-Infil')
+                twilioHandler.sendMessage(number,'Hello! thanks for your interest in DNS exfiltration! \n\nPlease head to our github page for more information! \n\n https://github.com/Stratiz/DNS-Exfil')
             } else {
                 addResponse("4.0.4.0")
             }
