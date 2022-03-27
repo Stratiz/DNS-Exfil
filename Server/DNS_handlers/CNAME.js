@@ -109,43 +109,46 @@ function getDownload(name,segNum,callback) {
     }
 }
 
-module.exports = async function(arguments,addResponse) {
-    let direction = arguments[0]
+module.exports = {
+    Function: async function(arguments,addResponse) {
+        let direction = arguments[0]
 
-    if (direction == "up") {
-        let command = arguments[1]
-        
-        if (command == "start") {
-            let filename = arguments[2]
-            addResponse(await startUpload(filename))
-        } else if (command == "send") {
-            let key = arguments[2]
-            let seqNum = arguments[3]
-            let data = arguments[4]
+        if (direction == "up") {
+            let command = arguments[1]
             
-            addResponse(fragmentUpload(key,seqNum,data))
+            if (command == "start") {
+                let filename = arguments[2]
+                addResponse(await startUpload(filename))
+            } else if (command == "send") {
+                let key = arguments[2]
+                let seqNum = arguments[3]
+                let data = arguments[4]
+                
+                addResponse(fragmentUpload(key,seqNum,data))
 
-        } else if (command == "end") {
-            let key = arguments[2]
-            addResponse(endUpload(key))
-        } else {
-            console.log("Invalid up command: ",command)
+            } else if (command == "end") {
+                let key = arguments[2]
+                addResponse(endUpload(key))
+            } else {
+                console.log("Invalid up command: ",command)
+            }
+            
+        } else if (direction == "dn") {
+            //dn.info.applicationName.dns-exfil.tech - General; size
+            //dn.get.seqNumber.applicationName.dns-exfil.tech - sequence of an application
+
+            let command = arguments[1]
+            if (command == "info") {
+                let name = arguments[2]
+                addResponse(await infoDownload(name))
+
+            } else if (command == "get") {
+                let seqNum = arguments[3]
+                let name = arguments[2]
+                getDownload(name,seqNum,addResponse)
+            }
+
         }
-        
-    } else if (direction == "dn") {
-        //dn.info.applicationName.dns-exfil.tech - General; size
-        //dn.get.seqNumber.applicationName.dns-exfil.tech - sequence of an application
-
-        let command = arguments[1]
-        if (command == "info") {
-            let name = arguments[2]
-            addResponse(await infoDownload(name))
-
-        } else if (command == "get") {
-            let seqNum = arguments[3]
-            let name = arguments[2]
-            getDownload(name,seqNum,addResponse)
-        }
-
-    }
+    },
+    Cache: fileCache
 }
