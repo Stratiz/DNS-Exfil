@@ -84,6 +84,7 @@ function Download-DNSFile {
         return 
     } Elseif ($fragmentCount -eq "DNE"){ 
         write-host "ERROR:" $applicationName "does not exist"
+        return
     } Else {
         write-host "size: OK" $fragmentCount 
     } 
