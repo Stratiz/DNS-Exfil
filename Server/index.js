@@ -1,11 +1,13 @@
 // Author: Harrison Lewis (@Stratiz)
 require('dotenv').config()
-console.log(process.env)
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-console.log(authToken)
+
 const twilio = require('twilio')
 const twilioClient = twilio(accountSid, authToken);
+
+const database = require("./database");
 
 // DNS
 const dns2 = require('dns2');
@@ -22,9 +24,10 @@ let lastTextTime = Date.now()/1000
 
 // For uploading
 
-function startUpload(filename) {
+async function startUpload(filename) {
     var targetData = fileCache.find(fileData => fileData.name == filename);
-    if (!targetData) {
+    var databaseData = await database.getHash(filename)
+    if (!targetData && !databaseData[0]) {
         currentKey += 1
         fileCache.push({
             name: filename,
@@ -45,6 +48,7 @@ function endUpload(key) {
     if (targetData) {
         targetData.finished = true
         targetData.key = null
+        database.addHash(targetData.name,targetData.base64)
         return "OK"
     } else {
         console.log("Unknown key");
@@ -84,9 +88,12 @@ function infoDownload(name) {
     }
 }
 
-function getDownload(name,segNum,callback) {
+async function getDownload(name,segNum,callback) {
     
     var targetData = fileCache.find(fileData => fileData.name == name);
+    if (!targetData) {
+        var targetData = await database.getHash(filename)
+    }
     if (targetData) {
         var fragGroupStart = (segNum*(FRAGMENT_LENGTH*DOWNLOAD_CNAMES))
         let fragGroup = targetData.base64.substring(fragGroupStart,fragGroupStart+(FRAGMENT_LENGTH*DOWNLOAD_CNAMES))
@@ -137,7 +144,7 @@ const server = dns2.createServer({
                 
                 if (command == "start") {
                     let filename = arguments[2]
-                    addResponse(startUpload(filename))
+                    addResponse(await startUpload(filename))
                 } else if (command == "send") {
                     let key = arguments[2]
                     let seqNum = arguments[3]
@@ -164,7 +171,7 @@ const server = dns2.createServer({
                 } else if (command == "get") {
                     let seqNum = arguments[3]
                     let name = arguments[2]
-                    getDownload(name,seqNum,addResponse)
+                    await getDownload(name,seqNum,addResponse)
                     console.log(response.answers)
                 }
             
