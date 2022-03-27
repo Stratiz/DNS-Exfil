@@ -1,5 +1,46 @@
 // Author: Harrison Lewis (@Stratiz)
+require('dotenv').config("")
+console.log(process.env)
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+console.log(authToken)
+const twilio = require('twilio')
+const twilioClient = twilio(accountSid, authToken);
 
+/*twilioClient.messages
+  .create({
+     body: 'test?',
+     from: '+15402991875',
+     to: '+12107082468'
+   })
+  .then(message => console.log(message.sid));*/
+
+
+// HTTP webhook
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+
+
+// support parsing of application/json type post data
+app.use(bodyParser.json());
+//support parsing of application/x-www-form-urlencoded post data
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.post('/post', async function(request, response) {
+    console.log(request.body);
+    response.sendStatus(200);
+});
+app.post('/pre', async function(request, response) {
+    console.log(request.body);
+    response.sendStatus(200);
+});
+
+app.get("/", async function(request, response) {
+    response.sendStatus(418);
+});
+
+// DNS
 const dns2 = require('dns2');
 
 const { Packet } = dns2;
@@ -24,7 +65,7 @@ function startUpload(filename) {
 
 function endUpload(key) {
     
-    var targetData = fileCache.find(fileData => fileData.key.toString() == key);
+    var targetData = fileCache.find(fileData => (fileData.key || "").toString() == key);
     if (targetData) {
         targetData.finished = true
         targetData.key = null
@@ -36,7 +77,7 @@ function endUpload(key) {
 }
 
 function fragmentUpload(key,seq,data) {
-    var targetData = fileCache.find(fileData => fileData.key.toString() == key);
+    var targetData = fileCache.find(fileData => (fileData.key || "").toString() == key);
     if (targetData) {
         if (targetData.currentSequence == Number(seq)) {
             targetData.currentSequence += 1;
@@ -48,7 +89,7 @@ function fragmentUpload(key,seq,data) {
         }
         
     } else {
-        console.log("Unknown key for fragment");
+        console.log("Unknown key for fragment",key);
         return "ERROR"
     }
 }
@@ -147,6 +188,14 @@ const server = dns2.createServer({
         } else {
             console.log(arguments)
         }
+    } else {
+        response.answers.push({
+            name,
+            type: Packet.TYPE.A,
+            class: Packet.CLASS.IN,
+            ttl: 300,
+            address: "35.222.91.162"
+        });
     }
 
     send(response);
@@ -166,7 +215,7 @@ server.on('close', () => {
 });
 
 server.listen({
-  udp: 53
+  udp: 5333
 });
 
 //server.close();
