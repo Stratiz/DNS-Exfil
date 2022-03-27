@@ -44,6 +44,12 @@ Our goal is not to spread malware or fear monger, if we wished to do that there 
 
 This is purely our take on DNS Exfiltration, we've built somewhat of a framework here that essentially turns DNS into a command line interface.
 
+# SMS COMMANDS
+
+`list loaded`
+
+Displays a list of cached files on the server which can be quickly pulled using the client script
+
 # SERVER "API" DOCUMENTATION
 
 ***THERE IS A POWERSHELL SCRIPT TO AUTOMATE THIS UNDER THE CLIENT FOLDER*** 
