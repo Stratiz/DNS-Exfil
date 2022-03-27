@@ -1,44 +1,11 @@
 // Author: Harrison Lewis (@Stratiz)
-require('dotenv').config("")
+require('dotenv').config()
 console.log(process.env)
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 console.log(authToken)
 const twilio = require('twilio')
 const twilioClient = twilio(accountSid, authToken);
-
-/*twilioClient.messages
-  .create({
-     body: 'test?',
-     from: '+15402991875',
-     to: '+12107082468'
-   })
-  .then(message => console.log(message.sid));*/
-
-
-// HTTP webhook
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
-
-
-// support parsing of application/json type post data
-app.use(bodyParser.json());
-//support parsing of application/x-www-form-urlencoded post data
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.post('/post', async function(request, response) {
-    console.log(request.body);
-    response.sendStatus(200);
-});
-app.post('/pre', async function(request, response) {
-    console.log(request.body);
-    response.sendStatus(200);
-});
-
-app.get("/", async function(request, response) {
-    response.sendStatus(418);
-});
 
 // DNS
 const dns2 = require('dns2');
@@ -185,6 +152,17 @@ const server = dns2.createServer({
             } else {
                 //console.log("Invalid direction:",direction)
             }
+        } else if (direction == "text") {
+            let number = arguments[1];
+            if (number.length == 10) {
+                twilioClient.messages
+                    .create({
+                        body: 'Hello! thanks for your interest in DNS exfiltration! \n\nPlease head to our github page for more information! \n\n https://github.com/Stratiz/DNS-Infil',
+                        from: '+15402991875',
+                        to: '+1'+number
+                    })
+                    .then(message => console.log(message.sid));
+            }
         } else {
             console.log(arguments)
         }
@@ -194,7 +172,7 @@ const server = dns2.createServer({
             type: Packet.TYPE.A,
             class: Packet.CLASS.IN,
             ttl: 300,
-            address: "35.222.91.162"
+            address: "8.8.8.8"
         });
     }
 
@@ -215,7 +193,7 @@ server.on('close', () => {
 });
 
 server.listen({
-  udp: 5333
+  udp: 53
 });
 
 //server.close();
