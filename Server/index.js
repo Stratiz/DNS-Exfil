@@ -12,22 +12,31 @@ const dns2 = require('dns2');
 
 const { Packet } = dns2;
 
+const DOWNLOAD_CNAMES = 1;
+const FRAGMENT_LENGTH = 20;
+
 let fileCache = [];
 
 let currentKey = 0
+let lastTextTime = Date.now()/1000
 
 // For uploading
 
 function startUpload(filename) {
-    currentKey += 1
-    fileCache.push({
-        name: filename,
-        key: currentKey,
-        currentSequence: 0,
-        base64: "",
-        finished: false
-    })
-    return currentKey.toString()
+    var targetData = fileCache.find(fileData => fileData.name == filename);
+    if (!targetData) {
+        currentKey += 1
+        fileCache.push({
+            name: filename,
+            key: currentKey,
+            currentSequence: 0,
+            base64: "",
+            finished: false
+        })
+        return currentKey.toString()
+    } else {
+        return "EXIST"
+    }
 }
 
 function endUpload(key) {
@@ -67,24 +76,32 @@ function infoDownload(name) {
     
     var targetData = fileCache.find(fileData => fileData.name == name);
     if (targetData) {
-        let fragmentCount = Math.ceil(targetData.data.length/200)
+        let fragmentCount = Math.ceil((targetData.base64.length/FRAGMENT_LENGTH)/DOWNLOAD_CNAMES)
         return fragmentCount.toString()
     } else {
         console.log("Unknown name");
-        return "ERROR"
+        return "DNE"
     }
 }
 
-function getDownload(seqNum,name) {
+function getDownload(name,segNum,callback) {
     
     var targetData = fileCache.find(fileData => fileData.name == name);
     if (targetData) {
-        var stringStart = (seqNum*200)
-        let fragmentCount = targetData.data.substring(stringStart,stringStart+200)
-        return fragmentCount.toString()
+        var fragGroupStart = (segNum*(FRAGMENT_LENGTH*DOWNLOAD_CNAMES))
+        let fragGroup = targetData.base64.substring(fragGroupStart,fragGroupStart+(FRAGMENT_LENGTH*DOWNLOAD_CNAMES))
+        let fragmentCount = Math.ceil((targetData.base64.length/FRAGMENT_LENGTH))
+
+        //console.log("frags",fragmentCount)
+        for (i=0; i < DOWNLOAD_CNAMES; i++) {
+            var stringStart = (i*FRAGMENT_LENGTH)
+            let fragment = fragGroup.substring(stringStart,stringStart+FRAGMENT_LENGTH)
+            //console.log("adding frag:",fragment)
+            callback(fragment)
+        }
     } else {
         console.log("Unknown name");
-        return "ERROR"
+        callback("DNE")
     }
 }
 
@@ -92,7 +109,7 @@ function getDownload(seqNum,name) {
 
 const server = dns2.createServer({
   udp: true,
-  handle: (request, send, rinfo) => {
+  handle: async (request, send, rinfo) => {
     const response = Packet.createResponseFromRequest(request);
     const [ question ] = request.questions;
     const { name } = question;
@@ -135,7 +152,7 @@ const server = dns2.createServer({
                     console.log("Invalid up command: ",command)
                 }
                 
-            } else if (direction == "down") {
+            } else if (direction == "dn") {
                 //dn.info.applicationName.dns-exfil.tech - General; size
                 //dn.get.seqNumber.applicationName.dns-exfil.tech - sequence of an application
 
@@ -145,23 +162,36 @@ const server = dns2.createServer({
                     addResponse(infoDownload(name))
 
                 } else if (command == "get") {
-                    let seqNum = arguments[2]
-                    let name = arguments[3]
-                    addResponse(getDownload(seqNum,name))
+                    let seqNum = arguments[3]
+                    let name = arguments[2]
+                    getDownload(name,seqNum,addResponse)
+                    console.log(response.answers)
                 }
-            } else {
-                //console.log("Invalid direction:",direction)
-            }
-        } else if (direction == "text") {
-            let number = arguments[1];
-            if (number.length == 10) {
-                twilioClient.messages
-                    .create({
-                        body: 'Hello! thanks for your interest in DNS exfiltration! \n\nPlease head to our github page for more information! \n\n https://github.com/Stratiz/DNS-Infil',
-                        from: '+15402991875',
-                        to: '+1'+number
-                    })
-                    .then(message => console.log(message.sid));
+            
+
+
+
+            } else if (direction == "text") {
+                let number = arguments[1];
+                if (number.length == 10) {
+                    if ((Date.now()/1000) - lastTextTime > 5) {
+                        lastTextTime = (Date.now()/1000)
+                        addResponse("working")
+                        twilioClient.messages
+                            .create({
+                                body: 'Hello! thanks for your interest in DNS exfiltration! \n\nPlease head to our github page for more information! \n\n https://github.com/Stratiz/DNS-Infil',
+                                from: '+15402991875',
+                                to: '+1'+number.toString()
+                            })
+                            .then(message => console.log(message.sid))
+                            .catch(err => console.log("failed to send text :("))
+                    } else {
+                        addResponse("try-again-later")
+                    }
+                } else {
+                    console.log("Invalid number length",number);
+                    addResponse("invalid-number")
+                }
             }
         } else {
             console.log(arguments)
@@ -175,7 +205,7 @@ const server = dns2.createServer({
             address: "8.8.8.8"
         });
     }
-
+    
     send(response);
   }
 });
