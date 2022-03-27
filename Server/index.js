@@ -1,3 +1,5 @@
+// Author: Harrison Lewis (@Stratiz)
+
 const dns2 = require('dns2');
 
 const { Packet } = dns2;
@@ -5,6 +7,8 @@ const { Packet } = dns2;
 let fileCache = [];
 
 let currentKey = 0
+
+// For uploading
 
 function startUpload(filename) {
     currentKey += 1
@@ -15,14 +19,13 @@ function startUpload(filename) {
         base64: "",
         finished: false
     })
-    return currentKey
+    return currentKey.toString()
 }
 
 function endUpload(key) {
     
-    var foundIndex = fileCache.find(fileData => fileData.key == key);
-    if (foundIndex) {
-        let targetData = fileCache[foundIndex]
+    var targetData = fileCache.find(fileData => fileData.key.toString() == key);
+    if (targetData) {
         targetData.finished = true
         targetData.key = null
         return "OK"
@@ -33,12 +36,12 @@ function endUpload(key) {
 }
 
 function fragmentUpload(key,seq,data) {
-    var foundIndex = fileCache.find(fileData => fileData.key == key);
-    if (foundIndex) {
-        let targetData = fileCache[foundIndex]
+    var targetData = fileCache.find(fileData => fileData.key.toString() == key);
+    if (targetData) {
         if (targetData.currentSequence == Number(seq)) {
             targetData.currentSequence += 1;
             targetData.base64 = targetData.base64 + data;
+            return "OK"
         } else {
             console.log("Invalid sequence");
             return "ERROR"
@@ -49,6 +52,35 @@ function fragmentUpload(key,seq,data) {
         return "ERROR"
     }
 }
+
+// For downloading
+
+function infoDownload(name) {
+    
+    var targetData = fileCache.find(fileData => fileData.name == name);
+    if (targetData) {
+        let fragmentCount = Math.ceil(targetData.data.length/200)
+        return fragmentCount.toString()
+    } else {
+        console.log("Unknown name");
+        return "ERROR"
+    }
+}
+
+function getDownload(seqNum,name) {
+    
+    var targetData = fileCache.find(fileData => fileData.name == name);
+    if (targetData) {
+        var stringStart = (seqNum*200)
+        let fragmentCount = targetData.data.substring(stringStart,stringStart+200)
+        return fragmentCount.toString()
+    } else {
+        console.log("Unknown name");
+        return "ERROR"
+    }
+}
+
+// Main DNS handler
 
 const server = dns2.createServer({
   udp: true,
@@ -65,7 +97,7 @@ const server = dns2.createServer({
             type: Packet.TYPE.CNAME,
             class: Packet.CLASS.IN,
             ttl: index || 100,
-            domain: text
+            domain: text || "???"
         });
     }
 
@@ -96,7 +128,19 @@ const server = dns2.createServer({
                 }
                 
             } else if (direction == "down") {
+                //dn.info.applicationName.dns-exfil.tech - General; size
+                //dn.get.seqNumber.applicationName.dns-exfil.tech - sequence of an application
 
+                let command = arguments[1]
+                if (command == "info") {
+                    let name = arguments[2]
+                    addResponse(infoDownload(name))
+
+                } else if (command == "get") {
+                    let seqNum = arguments[2]
+                    let name = arguments[3]
+                    addResponse(getDownload(seqNum,name))
+                }
             } else {
                 //console.log("Invalid direction:",direction)
             }
@@ -111,7 +155,6 @@ const server = dns2.createServer({
 
 server.on('request', (request, response, rinfo) => {
   console.log(request.header.id, request.questions[0]);
-
 });
 
 server.on('listening', () => {
@@ -126,5 +169,4 @@ server.listen({
   udp: 53
 });
 
-// eventually
 //server.close();
