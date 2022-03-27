@@ -2,9 +2,9 @@
   "name": "dms-exfil",
   "version": "1.0.0",
   "description": "exfil",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "node server.js"
   },
   "author": "Harrison Lewis",
   "license": "ISC",
